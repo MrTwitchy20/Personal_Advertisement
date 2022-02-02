@@ -1,0 +1,174 @@
+This File will serve as a rudimentary digital diary of works carried out for the Thesis project. A re-formatted version may be required at a later date for marking as part of courswork.
+
+15.07.21 Thur:
+	- Playing around with datatypes and resize function to understand opperation
+17.07.21 Sat:
+	- Wrote memmory_alloc.c -> need to test and ensure this code is concrete because it's the foundation of everything
+	- I made a visual illustration in excel of the Memory allocation grid layout visualisation.exe
+18.07.21 Sat:
+	- Wrote a an allocate rectangualar grid function 
+	- need to decide if we will rotate the grid
+	- began an excel visual to show memory allocation.
+19.07.21 Mon:
+	- Could write an excel macro to verify/visulaise expected code outputs?
+	- I did further work on IO, working on getting multiple procs to print to file similtaniously.
+20.07.21 Tues:
+	- Backed up chuck thesis files
+	- Working on file print function, each processor will have its own offset based on the position in the grid.
+	- Mannaged to successfully get fileview to work for 'int' in parallel with 9 procs
+	- The previously written Python code for double is not compatable.
+26.07.21 Mon:
+	- Had poor wifi and kept crashing out of chuck
+	- Wrote some matrix functions on home pc 
+	- changed print square/rect matrix to improve formatting output
+	- wrote an initialize_2d_grid_values() function to set an array to zero
+	- wrote a Label_2d_matrix positions function for troubleshooting, will need to use this in order to decide whether rotate/inverting of matrix will be nessisary
+27.07.21 Tue:
+	- Made some minor touch ups/clean up to Parallel print function 
+29.07.21 Thur:
+	- I have been trying to put my Parallel_print_int function together, was working as a main.c but compartmentalising it to a function has encountered
+	- The solution to this bug was not to use "void function(MPI_Comm MPI_COMM_WORLD)" the function input in this case MPI_COMM_WORLD is not technically an MPI_Comm because it was 
+	never declared as such as would normally be done for new communicators, MPI_COMM_WORLD being a default global communicator dosnt need to be passed into the function at all.
+	- Got Parallel_print_int function working for int, now need to make it work for double. The reason I did int first is because int's are easier to visually confirm 
+	for testing purposes when checking the output binary files
+
+05.08.21 Thur:
+	- Had to resolve an issue with Github, ssh key for private repo accessible with clone,push/pull 
+	- Trying to set up for access from multiple devices for cohesive file sharing/saving
+06.08.21 Fri:
+	- Finally got double print working
+	- Mannaged to finally set up github on both chuck/home lnux machine. Will now be able to share code with kyle
+	- Need to clean up unessisary files on chuck and commit to git
+	- Email kyle tomorrow
+08.08.21 Sun:
+	- Need to be declaring arrays dynamically as nodes are distributed after file is run.
+	- Parallel_write_to_file should have a complimentary .h file
+	- rename Binary_to_txt.c
+	- An error exists with my previous attempts at dynamic memory allocation
+	- MPI_write_to_file() takes a single input pointer so the method of dynamic memmory alloction should allow for that.  
+09.08.21 Mon:
+	- Re-wrote Parallel_write_to_file.c into two seperate files "Parallel_write_to_file.c & Parallel_write_to_file_test.c", 
+	this was done to distinguish between a Main() test code which utalises the functions in Parallel_write_to_file.c from the
+	file containing those functions. This also required altering the makefile. Tested left working!
+	- Uploaded all code files to date to GitHub for tracking and file management purposes.
+	- Emailed Thesis supervisor to add to Github repo, arrange zoom call and update on progress to date.
+	- While attempting to generate a version of the code which utilizes Dynamic memory allocation as opposed to static two problems were encountered
+		1. MPI_write() function takes an imput buf[] however with 2D dynamic memory it is needed to utilise buf[][], issue may be resolvable with a while loop
+		and a disp offset increasing by 1*rowsize*counter
+		2. When run on chuck significant error messages were incurred and aborts which indicated the dynamic memory was incorrectly free'd. After substancial trouble shooting and 
+		use of valgrind it was discovered that the free() functions were correct however within alloc_2D_sq_matrix(); addresses were being pointed to exceeding allocated data address.
+		"(*A)[i]=(data+M*i);" an M existed where an N was due (mixing rows and columns)
+10.08.21 Tue:
+	- Continued with Dynamic_write_to_file.c, code to demonstrate use of dynamically allocated memory in combination with the Parallel print.
+	This was successfully written and run on a square matrix however incurred errors when attempting rectangular examples, this is likley due to a mixup in implementation of
+	columm/rows however will require some work to comb and ensure all functions to date have uniform use of A[row][column] structure.
+	- The issue surrounding MPI_write() discovered yesterday appears to be easily resolvable without use of for loops due to the nature of the 
+	dynamically allocated memory system used which requires only a single pointer.
+	- An issue has been located with the Parallel_write_to_file() function as it receives an input "gridsize" used in combination with extent, where rectangular arrays are concerned 
+	this value is dependant on the column side, This was the issue and following correction of this input value sucessfull printing of a rectangular matrix was acheived.
+	- This brought to my attention that the decomp2d.c file I was using is assuming also square 2D grid and so needs to be updated for rectangular matrix. 
+11.08.21 Wed:
+	- Beginning work on an improved decomp2d.c function capable of splitting rectangular grids.
+	- It has been noticed that most functions are under-utilizing "const" qualifiers, this is poor practice and all should be updated to use in the interest
+	of avoiding troubleshoot time later with possible errors (TODO)
+	- Much of the day has been spent trying to optimise the distribution of procs over a rectangular grid. Note: you cant use a prime number to decompose, maybe a need for somthing to 
+	check also a rectangular matrix may be distributed the same number of procs for x and y desite the inequality. Maybe start by finding common multiples and 
+	checking for even decomposition then check options against ratio.
+13.08.21 Thurs:
+	- Almost entirely completed the MPI_rect_decomp() for deciding how to distribute procs across rectangle grids. The function has some optional improvements
+	to be made and requires further testing to ensure opperation as expected.
+	This was a significant challenge in itself as it required the formulatin of a relativly universal set of rules to handle all circumstances. The implemented solution can now 
+	distribute any non prime number of processors allocated to a job across a 2D grid. This currently works for both tall-skinny, short-wide and even square grids, allowing use of non 
+	square processor numbers.
+	- It might be interesting to compare perfomance of a grid over the same number of procs but different orientations of those procs to demonstrate.  
+	- It was a target to have a running simulation today however this will need to be pushed to tomorrow/weekened.
+14.08.21 Fri:
+	- Email kyle to confirm monday meeting and confirm time (Is he currently in states/ timezone difference) (Done)
+	- Polished off the MPI_rect_decomp() function, all that is required now in it is correct EXIT_FAILURE statements and .h library for error handling.
+	- Took a look at the next step which is a tweaked version of MPI_Decomp2d() function which takes the input X and Y procs and subdivideds the allocated grid sections.
+	This should be straight forward, and may be easiest to use two MPI_Decomp1d() calls along with the initial section of MPI_Decomp2d() retrofit to considere the rectangular sections.
+15.08.21 Sun:
+	- MPI_Rect_Decomp2d() Is completed however not opperating as expected, decomposes however seems to have a fault causing the grid sizes to be multiplied by 2. i
+	This has been written utilising the 1D function which also causes issues as previously had a faultcheck to determine if the number of procs was below the largest row size,
+	where you have a 2d system this inevitbaly exceeded.
+	- Issue was resolved, by replacing use of 1D which was too simplisitic for use as 2D decomp, opted to retrofit with altered MPI_decomp2d() function which considers X and Y grids
+	in same fucntion. Appears to be opperating correctly for both square and rectangular decompositions.
+	In decomp2d.c there is a cleanup required, Two functions maybe easier to call as one instead requiring one call only
+16.08.21 Mon:
+	- Met with Kyle today, Discussed how rectangular to annulus should be a mannagable adaptation from rectangular matrix, the idea being to keep the same number or rectangular nodes
+	however one direction would be periodic, radially and distances between nodes are radially/axially dependant. This means the finite difference/method applied will need to consider
+	such a change.
+	- I will need to come up with the minimum viable working project to start, My worries about robust and highly tested code is not nessiary. Testing of code refers more so to
+	implementation of various methods and actuall code outputs. Suggestion is that there need to be two metrics for testing, one to convince us that the output is what we want and expect
+	physically/ visually but another that is more qualitative. I need to decide how we will test this code.
+	- Contact Mike regarding deadlines to verify.
+	- I am to get code cleaned up and in ready state for implementation of next problems for wednesday and take a look at the means of application of annulus, material variation and time dependancy.
+	- will inclusion/exclusion of the ghost arrays cause a significant issue in printing functions/elswhere 
+17.08.21 teu:
+	- Received vaccine
+18.08.21 Wed:
+	- Brought Binary_to_decimal_txt.py to a more completed and pollished state with commenting and some minimal error checking
+	- Wrote a new and very involved function to Parallel write taking consideration for ghost columns/rows and implemented a functioning test in main.c
+	- Emailed mike regarding deadline
+19.08.21 Thur:
+	-  Wrote tow boundary initilaization functions Initialize_2D_Grid_Boundries() Initialize_2D_Grid_Ghost_Boundries() which can initialise the outer edge of either the 
+	ghost proc arrays or the main matrix with directed input values. Should it be needed these functions can be adjusted for non-steady values. 
+	- Wrote Exchange_Data_2D(); and Sweep_solve_2D() and Calc_grid_diff() 
+20.08.21 Fri:
+	- Wondering if there is a better metric for testing convergance of calculation without the need for an entire second matrix.
+23.08.21 Mon:
+	- Investigated the possibility of implementating Composite Mediums (Multiple materials in contact) either using Cartesian or Cylindrical. Given the remaining time left this will not be a possibility for implementation as it is non-trivial.
+24.08.21 Tues:
+	- Met with Kyle, 
+	- Should be able to show that as time step is increase accuracy is improved at each time step and error goes down as a factor of time.
+	- Decided I wont do composite material, each time step dosnt have an itterative x,y solve
+01.09.21 Wed:
+	- Examining how an analytical solution could be obtained with the use of seperation of variables technique.
+02.09.21 Thur:
+	- Continued to research a means of obtaining an analytical solution, examples that exist dont show applied solutions to obtain a form which can calculate based 
+	on spacial co-ordinates but rather form the eiganvalue
+	- Explanations generally cover simpler cases and are difficult to follow, It may be nessisary to perform many simpler base cases seperatly  
+03.09.21 Fri:
+	- Moved back to coding the cylindrical co-ordinate solution in a steady state form with convective boundaries and internal heat generation 
+04.09.21 Sat:
+	- Discovered significant memory leak which would ultimatly have caused failure when run on larger grid sizes, issue was present in the jaccobi.c exchange function due to 
+	a call for MPI_Commit(Datatype); without a corresponding free. A similar issue although arguably less fatal was discovered in Parallel print functions which simimlarly had
+	not been using MPI_Type_free(); 
+	- Completed Grid difference function which will obtain an RMS grid difference value to indicate convergence of grids to a suitable user specified tollerance
+	- Discovered an error preventing run on a single processor, error was occuring in decomp2d.c due to an error returned trying to decompose prime number of procs, this required
+	the exception of 1
+	- Previously It had not been possible to print the boundary conditions to file, this was because the sweep function in combination with the Parallel_print_to_file() require
+	universal statements which satisfy individually for all procs. The outermost procs however hold the boundary conditions either as part of their submatrix or within there ghost
+	boundaries. The issue arises when we try to sweep across the grid performing calculations as this could overwrite boundaries or if the boundary was in the ghost column would not be
+	printed with the Parallel_print_to_file or else all proc ghosts would print. The solution was to calculate the relevent sweep start and end x/y integers and pass these into the sweep
+	function.
+	- MPI Error checking value in Parallel_print_to_file is displaying even on seemingly successfull prints leading me to suspect the error value of 0/1 should be visa versa
+05.09.21 Sun:
+	- Wrote a convective boundary solution however I could not successfully get this working, It is my understanding the functions are coded correctly however the functions used themselves
+	may have an error as even using a calculator and manually checking the internal nodes tend to infinity with convective boundary condition of 20dC ambient. It may be my interpretation
+	of their application is not correct.
+	- I discovered a very nuanced issue the functions I have been using assume i=0->M (grid node numbering an an arbitraty direction) however my nodes all begin at 1 (0 would be a ghost)
+	This is significant as some formula depend on the actual value i in calculating stepped radius.
+	- Another issue encountered was similarly the delta_r calculation b-a/M in the reference I have been using however as i=0->M the translation for my code is that I require N-1.
+06.09.21 Mon:
+	- Worked on Transient 1D annular heat conduction with fixed boundary conditions, This posed difficult due to a still unknown issue. It may have been resolved by starting fresh using 
+	the previously acheived Steady state 1D annular heat conduction file. This has yet to be investigated further as working correctly
+	- Wrote .h files and cleaned up functions, including const qualifiers where appropriate and adjusting comments.
+	- I had written a function for testing convergence which essentially found an RMS (Root Mean Squared) value of the differences between each node of an A and B matrix
+	for the entire grid and compared this with a user specified tollerance. This appears to fail using Transient simulation maybe because the changes are significantly less rapid, 
+	i.e. the grid difference initially can satisfy the criteria instantly.
+	- Im considering a possible convergence test which would take a Error += floor(|grid_A-grid_B|/tollerance) at every grid position, the floor value may be too much of an expence
+	to use here as this calculation must be on for each itteration however the benefit would be that one could determine the moment all node positions meet a specified or lower
+	tollerance value. by performing a summation any value obtained greater than 1 indicates at least 1 node has not met the threshold.  
+07.09.21 Tues:	
+	- Wrote Analytical solution in mathlab
+	- Finnished writing remaining .h files
+	- Spent much of the day attempting to get 2D boundary conditions working
+	- I discovered an issue where I had been implicitly assuming the grid size (m) was equivalent to the number of nodes, this was a simple fix however will need to be remembered going forward
+	- I wrote out and tested new convergence criteria which seem to run without fault, Kyle is not sure of how it is working however.
+08.09.21 Wed:
+	- Ran simulations on 2D steady state
+	- Generated graphs/ heat plots
+	- Devised a means of converting the .txt to a 3d heat plot
+	- Verified Analytical matches expected Numerical results
+   	- Made speedup and processor run time plots. 
