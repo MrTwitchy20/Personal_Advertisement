@@ -2,7 +2,7 @@
 author: 	F.OSuibhne
 date:		23.09.21
 
-This repository will serves as a cloud based backup of all code based works to date related to my thesis. It will provide a means of tracking changes,
+This repository will serve as a cloud based backup of all code based works to date related to my thesis. It will provide a means of tracking changes,
 maintaining file continuity between the multiple devices I use and also provide my supervisor access to track progress and comment/review content.
 
 Running Instructions:
